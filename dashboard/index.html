@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Factory Control Tower</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body {
+  background:#0e1117;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+}
+
+.container {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin-top:20px;
+  flex-wrap:wrap;
+}
+
+.card {
+  background:#161b22;
+  padding:20px;
+  border-radius:10px;
+  width:170px;
+}
+
+.big {
+  font-size:38px;
+  font-weight:bold;
+}
+
+.green { color:#00ff88; }
+.orange { color:#ffaa00; }
+.red { color:#ff4444; }
+
+.chart-box {
+  max-width:900px;
+  margin:30px auto;
+  background:#161b22;
+  padding:20px;
+  border-radius:10px;
+}
+
+button {
+  margin:5px;
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🏭 Smart Factory Control Tower</h1>
+
+<div class="container">
+
+  <div class="card">
+    <h3>OEE</h3>
+    <div id="oee" class="big">--</div>
+  </div>
+
+  <div class="card">
+    <h3>Availability</h3>
+    <div id="availability" class="big">--</div>
+  </div>
+
+  <div class="card">
+    <h3>Quality</h3>
+    <div id="quality" class="big">--</div>
+  </div>
+
+  <div class="card">
+    <h3>Records</h3>
+    <div id="records" class="big">--</div>
+  </div>
+
+</div>
+
+<div style="margin-top:15px;">
+  <button onclick="setRange(10)">10 min</button>
+  <button onclick="setRange(30)">30 min</button>
+  <button onclick="setRange(60)">1 h</button>
+  <button onclick="setRange(120)">2 h</button>
+  <button onclick="setRange(720)">12 h</button>
+  <button onclick="setRange(1440)">24 h</button>
+</div>
+
+<div class="chart-box">
+  <h3>📈 OEE Trend</h3>
+  <canvas id="oeeChart"></canvas>
+</div>
+
+<script>
+
+const KPI_URL = "http://localhost:8000/kpi";
+
+let history = [];
+let currentRange = 10;
+
+const canvas = document.getElementById("oeeChart");
+const ctx = canvas.getContext("2d");
+
+const chart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: [],
+    datasets: [{
+      label: "OEE %",
+      data: [],
+      borderWidth: 2,
+      tension: 0.3,
+      pointRadius: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    animation: false,
+    scales: {
+      y: {
+        min: 0,
+        max: 100
+      }
+    }
+  }
+});
+
+function setRange(minutes) {
+  currentRange = minutes;
+  console.log("RANGO CAMBIADO A:", minutes, "min");
+  updateChart();
+}
+
+
+function updateChart() {
+
+  const now = Date.now();
+  const limit = now - currentRange * 60 * 1000;
+
+  const filtered = history.filter(p => p.time >= limit);
+
+  chart.data.labels = filtered.map(p => p.label);
+  chart.data.datasets[0].data = filtered.map(p => p.value);
+
+  chart.update();
+}
+
+async function loadKPIs() {
+
+  try {
+
+    const res = await fetch(KPI_URL);
+    const data = await res.json();
+
+    const oee = data.oee;
+    const oeePct = (oee * 100).toFixed(1);
+
+    document.getElementById("availability").innerText = (data.availability * 100).toFixed(1) + "%";
+    document.getElementById("quality").innerText = (data.quality * 100).toFixed(1) + "%";
+    document.getElementById("records").innerText = data.records;
+
+    const oeeDiv = document.getElementById("oee");
+    oeeDiv.innerText = oeePct + "%";
+
+    oeeDiv.className = "big";
+    if (oee >= 0.85) oeeDiv.classList.add("green");
+    else if (oee >= 0.65) oeeDiv.classList.add("orange");
+    else oeeDiv.classList.add("red");
+
+    const nowTime = new Date();
+
+    history.push({
+      time: nowTime.getTime(),
+      label: nowTime.toLocaleTimeString(),
+      value: Number(oeePct)
+    });
+
+    history = history.filter(p => p.time >= Date.now() - 86400000);
+
+    updateChart();
+
+  } catch (err) {
+    console.error("ERROR KPI:", err);
+  }
+}
+
+setInterval(loadKPIs, 3000);
+loadKPIs();
+
+</script>
+
+</body>
+</html>

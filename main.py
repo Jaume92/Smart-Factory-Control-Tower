@@ -3,7 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 
-app = FastAPI(title="Smart Factory Control Tower API")
+# =========================
+# FASTAPI APP (RENDER SAFE)
+# =========================
+
+app = FastAPI(
+    title="Smart Factory Control Tower API",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -12,6 +21,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =========================
+# HEALTH CHECK ENDPOINTS
+# =========================
+
+@app.get("/")
+def root():
+    return {"status": "Smart Factory API online"}
+
+@app.get("/ping")
+def ping():
+    return {"ping": "ok"}
 
 # =========================
 # MODELO DE DATOS INDUSTRIAL
@@ -91,25 +111,20 @@ def get_kpis():
         total_scrap = sum(x["scrap"] for x in factory_db)
         total_downtime = sum(x["downtime"] for x in factory_db)
 
-        # Simulamos 60 minutos planificados por evento
         planned_time = len(factory_db) * 60
 
-        # Availability
         if planned_time > 0:
             availability = (planned_time - total_downtime) / planned_time
         else:
             availability = 0
 
-        # Quality
         if total_produced > 0:
             quality = (total_produced - total_scrap) / total_produced
         else:
             quality = 0
 
-        # Performance (placeholder realista)
         performance = 0.9
 
-        # OEE
         oee = availability * quality * performance
 
         return {
@@ -121,10 +136,12 @@ def get_kpis():
         }
 
     except Exception as e:
-        return {
-            "error": str(e)
-        }
+        return {"error": str(e)}
 
+
+# =========================
+# ALERTAS LEAN
+# =========================
 
 @app.get("/alerts")
 def get_alerts():
@@ -142,6 +159,4 @@ def get_alerts():
     if kpi["quality"] < 0.9:
         alerts.append("QUALITY ISSUE: Scrap rate too high")
 
-    return {
-        "alerts": alerts
-    }
+    return {"alerts": alerts}

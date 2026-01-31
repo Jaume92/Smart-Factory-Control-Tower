@@ -2,14 +2,17 @@
 
 const KPI_URL = "https://smart-factory-control-tower-2.onrender.com/kpi";
 
-
+// =======================
 // HISTÓRICO GLOBAL
-let history = [];
+// =======================
 
-// Rango actual en minutos
+let history = [];
 let currentRange = 10;
 
-// Chart
+// =======================
+// CHART
+// =======================
+
 const ctx = document.getElementById("oeeChart").getContext("2d");
 
 const chart = new Chart(ctx, {
@@ -39,13 +42,19 @@ const chart = new Chart(ctx, {
   }
 });
 
-// Cambiar rango
+// =======================
+// RANGE CONTROL
+// =======================
+
 function setRange(minutes) {
   currentRange = minutes;
   updateChart();
 }
 
-// Actualiza gráfico según rango seleccionado
+// =======================
+// UPDATE CHART
+// =======================
+
 function updateChart() {
 
   const now = Date.now();
@@ -59,7 +68,10 @@ function updateChart() {
   chart.update();
 }
 
-// Cargar KPIs
+// =======================
+// LOAD KPIS (SAFE VERSION)
+// =======================
+
 async function loadKPIs() {
 
   try {
@@ -67,30 +79,44 @@ async function loadKPIs() {
     const res = await fetch(KPI_URL);
     const data = await res.json();
 
-    const oee = data.oee;
+    // Protección contra null / undefined
+    const oee = data.oee ?? 0;
+    const availability = data.availability ?? 0;
+    const quality = data.quality ?? 0;
+    const records = data.records ?? 0;
+
     const oeePct = (oee * 100).toFixed(2);
 
-    // TARJETAS
+    // =======================
+    // KPI CARDS
+    // =======================
+
     const oeeDiv = document.getElementById("oee");
 
     document.getElementById("availability").innerText =
-      (data.availability * 100).toFixed(1) + "%";
+      (availability * 100).toFixed(1) + "%";
 
     document.getElementById("quality").innerText =
-      (data.quality * 100).toFixed(1) + "%";
+      (quality * 100).toFixed(1) + "%";
 
-    document.getElementById("records").innerText = data.records;
+    document.getElementById("records").innerText = records;
 
     oeeDiv.innerText = oeePct + "%";
 
-    // Semáforo
+    // =======================
+    // COLOR STATUS
+    // =======================
+
     oeeDiv.className = "big";
 
     if (oee >= 0.85) oeeDiv.classList.add("green");
     else if (oee >= 0.65) oeeDiv.classList.add("orange");
     else oeeDiv.classList.add("red");
 
-    // Guardar histórico
+    // =======================
+    // STORE HISTORY
+    // =======================
+
     const now = new Date();
 
     history.push({
@@ -99,11 +125,10 @@ async function loadKPIs() {
       value: Number(oeePct)
     });
 
-    // Mantener máx 24h en memoria
+    // Keep last 24h
     const maxAge = Date.now() - 24 * 60 * 60 * 1000;
     history = history.filter(p => p.time >= maxAge);
 
-    // Actualizar gráfico
     updateChart();
 
   } catch (err) {
@@ -111,7 +136,10 @@ async function loadKPIs() {
   }
 }
 
-// Auto refresh
+// =======================
+// AUTO REFRESH
+// =======================
+
 setInterval(loadKPIs, 3000);
 loadKPIs();
 

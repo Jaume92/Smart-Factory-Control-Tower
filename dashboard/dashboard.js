@@ -1,6 +1,7 @@
 <script>
 
-const KPI_URL = "http://localhost:8000/kpi";
+const KPI_URL = "https://smart-factory-control-tower-2.onrender.com/kpi";
+
 
 // HISTÓRICO GLOBAL
 let history = [];

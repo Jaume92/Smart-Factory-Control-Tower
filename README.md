@@ -1,148 +1,120 @@
-Smart Factory Control Tower — Sistema de Monitorización Lean en Tiempo Real
-Descripción general
+# Smart Factory Control Tower — Sistema de Monitorización Industrial en Tiempo Real
 
-Este proyecto implementa un sistema de monitorización industrial en tiempo real orientado a entornos Lean Manufacturing. El objetivo es simular una planta productiva digitalizada y proporcionar visibilidad operativa mediante KPIs clave, especialmente el indicador OEE (Overall Equipment Effectiveness).
+Sistema de monitorización industrial tipo SCADA para visualizar KPIs de producción en tiempo real a partir de un entorno de fábrica simulado.
 
-La solución está diseñada como un prototipo funcional de Control Tower industrial, integrando simulación de datos, backend de procesamiento y visualización ejecutiva.
+El proyecto implementa un pipeline completo desde la generación de datos de planta, su ingesta vía API, el cálculo de indicadores Lean y su visualización en un dashboard web en tiempo real.
 
-Funcionalidades principales
+---
 
-El sistema incluye actualmente:
+## Funcionalidades principales
 
-Generación automática de datos productivos mediante simulador industrial
+- Monitorización en tiempo real de KPIs industriales:
+  - OEE (Overall Equipment Effectiveness)
+  - Availability
+  - Quality
+- Visualización de tendencias mediante gráfica multilínea
+- Sistema de alertas visuales cuando los KPIs superan umbrales críticos
+- Simulador de planta industrial con comportamiento realista:
+  - Micro-paradas
+  - Averías
+  - Picos de producción
+  - Scrap variable
+- Interfaz estilo sala de control industrial
+- Modo turno noche
+- Actualización automática cada pocos segundos
 
-Ingesta de datos en tiempo real vía API REST
+---
 
-Cálculo dinámico de KPIs Lean
+## Arquitectura del sistema
 
-Monitorización de OEE, Availability, Performance y Quality
-
-Dashboard web con actualización automática
-
-Visualización de tendencias temporales
-
-Análisis por ventanas de tiempo configurables
-
-Arquitectura del sistema
-
-La arquitectura sigue un enfoque modular inspirado en sistemas industriales reales:
-
-Simulador de Planta
-        ↓
-API Backend (FastAPI)
-        ↓
-Motor de Cálculo Lean
-        ↓
-Dashboard Control Tower
-
-
-Este diseño permite desacoplar generación de datos, procesamiento y visualización, facilitando escalabilidad y despliegue en entornos cloud.
-
-Indicadores Lean implementados
-
-El KPI principal es el OEE (Overall Equipment Effectiveness), utilizado en entornos industriales para medir eficiencia productiva real.
-
-Fórmula aplicada:
-
-OEE = Availability × Performance × Quality
+[Simulador de Planta]
+│
+▼
+POST /machine-data
+│
+[Backend FastAPI]
+│
+├── Motor de KPIs (/kpi)
+├── Histórico de producción (/data)
+└── Sistema de alertas
+│
+▼
+[Dashboard Web SCADA]
 
 
-Donde:
+---
 
-Availability representa el tiempo operativo real frente al tiempo planificado
+## Tecnologías utilizadas
 
-Performance mide la eficiencia de velocidad de producción
+### Backend
+- Python
+- FastAPI
+- Uvicorn
+- API REST
 
-Quality refleja la proporción de producto conforme frente a scrap
+### Frontend
+- HTML5
+- CSS (tema industrial SCADA)
+- JavaScript Vanilla
+- Chart.js
 
-Este enfoque permite identificar pérdidas productivas y oportunidades de mejora continua.
+---
 
-Estructura del proyecto
-smart_factory/
- ├── backend/
- │    └── main.py
- ├── simulator/
- │    └── auto_factory_simulator.py
- ├── dashboard/
- │    └── index.html
+## KPIs implementados
 
-Ejecución local
-Iniciar backend API
+- OEE (Overall Equipment Effectiveness)
+- Availability
+- Quality
+- Contador de registros de producción
+
+---
+
+## Ejecución en local
+
+### 1. Arrancar backend
 
 Desde la carpeta backend:
 
-cd backend
-python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```bash
+python -m venv venv
+venv\Scripts\activate
+pip install fastapi uvicorn
+uvicorn main:app --reload
+La API quedará disponible en:
 
-
-La documentación interactiva de la API estará disponible en:
-
-http://localhost:8000/docs
-
-Iniciar simulador industrial
-
-Desde la carpeta simulator:
+http://127.0.0.1:8000
+2. Arrancar simulador de fábrica
+En otra terminal:
 
 cd simulator
 python auto_factory_simulator.py
+Esto inicia el flujo continuo de datos de producción.
 
+3. Abrir dashboard
+Abrir directamente en el navegador:
 
-Este proceso genera eventos productivos de forma continua.
+index.html
+Controles del dashboard
+Doble click en el título: activar/desactivar modo turno noche
 
-Visualizar Control Tower
+Botones de rango temporal: cambiar ventana de histórico
 
-Abrir en el navegador:
+Actualización automática cada 3 segundos
 
-dashboard/index.html
+Posibles mejoras futuras
+Persistencia en base de datos (PostgreSQL / SQLite)
 
+Autenticación de usuarios
 
-El dashboard se actualiza automáticamente en tiempo real.
+Multi-planta y multi-línea
 
-Caso de uso
+Módulo de mantenimiento predictivo
 
-El sistema está orientado a escenarios de consultoría digital industrial donde se requiere:
+Despliegue en cloud
 
-Monitorización continua de producción
+Forecast de producción
 
-Visualización ejecutiva de KPIs Lean
-
-Análisis de tendencias operativas
-
-Soporte a procesos de mejora continua
-
-Validación de arquitecturas de digitalización industrial
-
-Tecnologías utilizadas
-
-Python
-
-FastAPI
-
-REST API
-
-HTML, CSS y JavaScript
-
-Chart.js
-
-Simulación de procesos productivos
-
-Roadmap
-
-Las siguientes mejoras están previstas para futuras iteraciones:
-
-Sistema de alertas automáticas basado en umbrales Lean
-
-Pareto de causas de paradas y pérdidas productivas
-
-Persistencia de datos en base de datos
-
-Despliegue cloud del sistema completo
-
-Análisis histórico por turnos
-
-Comparación entre rendimiento objetivo y real
+Exportación de datos
 
 Autor
-
-Proyecto desarrollado por Jaume.
-Enfocado a sistemas de analítica industrial, consultoría digital y aplicaciones prácticas de inteligencia artificial en entornos productivos.
+Proyecto desarrollado por Jaume

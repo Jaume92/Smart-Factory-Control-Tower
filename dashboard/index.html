@@ -8,51 +8,181 @@
 
 <style>
 
+/* =========================
+   BASE THEME (SCADA DARK)
+========================= */
+
 body {
-  background:#0e1117;
-  color:white;
-  font-family:Arial;
-  text-align:center;
+  background: radial-gradient(circle at top, #111827, #020617);
+  color: #e5e7eb;
+  font-family: "Segoe UI", Arial, sans-serif;
+  text-align: center;
+  padding-top: 55px;
 }
+
+/* TITULO */
+
+h1 {
+  letter-spacing: 1px;
+  margin-top: 20px;
+  color: #38bdf8;
+  cursor: pointer;
+}
+
+/* GRID KPI */
 
 .container {
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin-top:20px;
-  flex-wrap:wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 20px;
+  margin: 25px auto;
+  max-width: 900px;
+  padding: 0 15px;
 }
+
+/* KPI CARDS */
 
 .card {
-  background:#161b22;
-  padding:20px;
-  border-radius:10px;
-  width:170px;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(56,189,248,0.15);
+  box-shadow: 0 0 15px rgba(0,0,0,0.6);
+  transition: all 0.2s ease;
 }
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 25px rgba(56,189,248,0.25);
+}
+
+/* KPI VALUE */
 
 .big {
-  font-size:38px;
-  font-weight:bold;
+  font-size: 40px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
-.green { color:#00ff88; }
-.orange { color:#ffaa00; }
-.red { color:#ff4444; }
+/* STATUS COLORS */
+
+.green { 
+  color:#22c55e;
+  text-shadow: 0 0 10px rgba(34,197,94,0.6);
+}
+
+.orange { 
+  color:#f59e0b;
+  text-shadow: 0 0 10px rgba(245,158,11,0.6);
+}
+
+.red { 
+  color:#ef4444;
+  text-shadow: 0 0 10px rgba(239,68,68,0.6);
+}
+
+/* CHART BOX */
 
 .chart-box {
-  max-width:900px;
-  margin:30px auto;
-  background:#161b22;
-  padding:20px;
-  border-radius:10px;
+  max-width: 950px;
+  margin: 30px auto;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(56,189,248,0.2);
+  box-shadow: 0 0 30px rgba(0,0,0,0.8);
 }
 
+/* BUTTONS */
+
 button {
-  margin:5px;
-  padding:8px 14px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
+  margin: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(56,189,248,0.3);
+  background: #020617;
+  color: #38bdf8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  box-shadow: 0 0 12px rgba(56,189,248,0.5);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   SCADA TOP BAR
+========================= */
+
+.scada-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: linear-gradient(90deg,#020617,#0f172a);
+  border-bottom: 1px solid rgba(56,189,248,0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+  font-weight: bold;
+  color: #38bdf8;
+  z-index: 999;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+
+/* =========================
+   ALERT BANNER
+========================= */
+
+.alert-banner {
+  margin: 10px auto;
+  max-width: 900px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #450a0a;
+  border: 1px solid #ef4444;
+  color: #fecaca;
+  font-weight: bold;
+  animation: blink 1s infinite;
+  display: none;
+}
+
+@keyframes blink {
+  0% { opacity:1; }
+  50% { opacity:0.4; }
+  100% { opacity:1; }
+}
+
+/* =========================
+   KPI PULSE EFFECT
+========================= */
+
+.pulse {
+  animation: pulseGlow 0.8s ease;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 rgba(56,189,248,0); }
+  50% { box-shadow: 0 0 25px rgba(56,189,248,0.5); }
+  100% { box-shadow: 0 0 0 rgba(56,189,248,0); }
+}
+
+/* =========================
+   NIGHT SHIFT MODE
+========================= */
+
+.night-shift {
+  filter: brightness(0.85) contrast(1.15);
+}
+
+/* MOBILE FIX */
+
+@media (max-width: 600px) {
+  h1 { font-size: 22px; }
+  .big { font-size: 32px; }
 }
 
 </style>
@@ -60,7 +190,7 @@ button {
 
 <body>
 
-<h1>🏭 Smart Factory Control Tower</h1>
+<h1>Smart Factory Control Tower</h1>
 
 <div class="container">
 
@@ -96,16 +226,52 @@ button {
 </div>
 
 <div class="chart-box">
-  <h3>📈 OEE Trend</h3>
+  <h3> OEE / Availability / Quality Trend</h3>
   <canvas id="oeeChart"></canvas>
 </div>
 
 <script>
 
-const KPI_URL = "https://smart-factory-control-tower-2.onrender.com" ;
+const KPI_URL = "http://127.0.0.1:8000/kpi";
 
 let history = [];
 let currentRange = 10;
+
+// =======================
+// SCADA TOP BAR
+// =======================
+
+const bar = document.createElement("div");
+bar.className = "scada-bar";
+bar.innerHTML = `
+  <div>CONTROL ROOM</div>
+  <div id="systemStatus">SYSTEM: ONLINE</div>
+  <div id="clock">--:--</div>
+`;
+document.body.prepend(bar);
+
+// =======================
+// ALERT BANNER
+// =======================
+
+const alertBox = document.createElement("div");
+alertBox.className = "alert-banner";
+alertBox.id = "alertBox";
+alertBox.innerText = "⚠ CRITICAL ALERT: LOW OEE DETECTED";
+document.body.insertBefore(alertBox, document.querySelector(".container"));
+
+// =======================
+// CLOCK
+// =======================
+
+setInterval(() => {
+  const now = new Date();
+  document.getElementById("clock").innerText = now.toLocaleTimeString();
+}, 1000);
+
+// =======================
+// CHART INIT (MULTI KPI)
+// =======================
 
 const canvas = document.getElementById("oeeChart");
 const ctx = canvas.getContext("2d");
@@ -114,13 +280,30 @@ const chart = new Chart(ctx, {
   type: "line",
   data: {
     labels: [],
-    datasets: [{
-      label: "OEE %",
-      data: [],
-      borderWidth: 2,
-      tension: 0.3,
-      pointRadius: 0
-    }]
+    datasets: [
+      {
+        label: "OEE %",
+        data: [],
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 0
+      },
+      {
+        label: "Availability %",
+        data: [],
+        borderWidth: 1,
+        tension: 0.3,
+        pointRadius: 0,
+        borderDash: [5,5]
+      },
+      {
+        label: "Quality %",
+        data: [],
+        borderWidth: 1,
+        tension: 0.3,
+        pointRadius: 0
+      }
+    ]
   },
   options: {
     responsive: true,
@@ -134,12 +317,18 @@ const chart = new Chart(ctx, {
   }
 });
 
+// =======================
+// RANGE CONTROL
+// =======================
+
 function setRange(minutes) {
   currentRange = minutes;
-  console.log("RANGO CAMBIADO A:", minutes, "min");
   updateChart();
 }
 
+// =======================
+// UPDATE CHART
+// =======================
 
 function updateChart() {
 
@@ -149,10 +338,25 @@ function updateChart() {
   const filtered = history.filter(p => p.time >= limit);
 
   chart.data.labels = filtered.map(p => p.label);
-  chart.data.datasets[0].data = filtered.map(p => p.value);
+
+  chart.data.datasets[0].data = filtered.map(p => p.oee);
+  chart.data.datasets[1].data = filtered.map(p => p.availability);
+  chart.data.datasets[2].data = filtered.map(p => p.quality);
 
   chart.update();
 }
+
+// =======================
+// NIGHT SHIFT MODE (DOUBLE CLICK TITLE)
+// =======================
+
+document.querySelector("h1").ondblclick = () => {
+  document.body.classList.toggle("night-shift");
+};
+
+// =======================
+// LOAD KPIS
+// =======================
 
 async function loadKPIs() {
 
@@ -161,12 +365,19 @@ async function loadKPIs() {
     const res = await fetch(KPI_URL);
     const data = await res.json();
 
-    const oee = data.oee;
-    const oeePct = (oee * 100).toFixed(1);
+    const oee = data.oee || 0;
+    const availability = data.availability || 0;
+    const quality = data.quality || 0;
+    const records = data.records || 0;
 
-    document.getElementById("availability").innerText = (data.availability * 100).toFixed(1) + "%";
-    document.getElementById("quality").innerText = (data.quality * 100).toFixed(1) + "%";
-    document.getElementById("records").innerText = data.records;
+    const oeePct = (oee * 100).toFixed(1);
+    const availabilityPct = (availability * 100).toFixed(1);
+    const qualityPct = (quality * 100).toFixed(1);
+
+    // KPI CARDS
+    document.getElementById("availability").innerText = availabilityPct + "%";
+    document.getElementById("quality").innerText = qualityPct + "%";
+    document.getElementById("records").innerText = records;
 
     const oeeDiv = document.getElementById("oee");
     oeeDiv.innerText = oeePct + "%";
@@ -176,22 +387,49 @@ async function loadKPIs() {
     else if (oee >= 0.65) oeeDiv.classList.add("orange");
     else oeeDiv.classList.add("red");
 
+    // STORE HISTORY
     const nowTime = new Date();
 
     history.push({
       time: nowTime.getTime(),
       label: nowTime.toLocaleTimeString(),
-      value: Number(oeePct)
+      oee: Number(oeePct),
+      availability: Number(availabilityPct),
+      quality: Number(qualityPct)
     });
 
     history = history.filter(p => p.time >= Date.now() - 86400000);
 
     updateChart();
 
+    // ALERT LOGIC
+    const statusLabel = document.getElementById("systemStatus");
+
+    if (oee < 0.7) {
+      alertBox.style.display = "block";
+      statusLabel.innerText = "SYSTEM: ALERT";
+      statusLabel.style.color = "#ef4444";
+    } else {
+      alertBox.style.display = "none";
+      statusLabel.innerText = "SYSTEM: ONLINE";
+      statusLabel.style.color = "#22c55e";
+    }
+
+    // KPI PULSE
+    document.querySelectorAll(".card").forEach(card => {
+      card.classList.remove("pulse");
+      void card.offsetWidth;
+      card.classList.add("pulse");
+    });
+
   } catch (err) {
     console.error("ERROR KPI:", err);
   }
 }
+
+// =======================
+// AUTO REFRESH
+// =======================
 
 setInterval(loadKPIs, 3000);
 loadKPIs();
